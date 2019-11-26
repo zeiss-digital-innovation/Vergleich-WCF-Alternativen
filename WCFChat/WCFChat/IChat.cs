@@ -12,10 +12,11 @@ namespace WCFChat
     {
         [OperationContract(IsOneWay = true)]
         void ReceiveChat(ChatInfos chatInfos);
+
         [OperationContract(IsOneWay = true)]
         void RefreshUserList(List<string> userList);
     }
-    
+
     [ServiceContract(CallbackContract = typeof(IChatClient), SessionMode = SessionMode.Required)]
     public interface IChat
     {
@@ -28,8 +29,9 @@ namespace WCFChat
         [OperationContract(IsOneWay = true)]
         void Refresh();
 
-        [OperationContract(IsOneWay = true)]
+        [OperationContract(IsOneWay = true, IsTerminating = true)]
         void LogOut();
+
         [OperationContract]
         List<ChatInfos> GetChats();
     }
