@@ -22,37 +22,15 @@ namespace WpfClient.ViewModel
         public string Username { get; set; }
         public string ChatText { get; set; }
         public string Userlist { get; set; } = "Teilnehmer";
-
-        ObservableCollection<Message> messages = new ObservableCollection<Message>();
-        public ObservableCollection<Message> Messages
-        {
-            get { return messages; }
-            set
-            {
-                messages = value;
-                //RaisePropertyChanged("Messages");
-            }
-        }
-
-        string windowTitle;
-        public string WindowTitle 
-        {
-            get { return windowTitle; } 
-            set
-            {
-                windowTitle = value;
-                //RaisePropertyChanged("WindowTitle");
-            }
-
-        }
-
+        public ObservableCollection<Message> Messages { get; set; }
+        public string WindowTitle { get; set; }
         public Visibility LoginVisibility { get; set; }
-
         public Visibility ChatViewVisibility { get; set; }
         public ICommand LoginCommand { get; private set; }
         public ICommand SendCommand { get; private set; }
         public ICommand LogOutCommand { get; private set; }
 
+        // Error Handler
         public string Error => string.Empty;
 
         public string this[string propertyName]
