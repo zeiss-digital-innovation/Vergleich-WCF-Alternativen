@@ -66,7 +66,6 @@ namespace WpfClient.ViewModel
             {
                 WindowTitle = "Chat Application";
             }
-
             
             Application.Current.MainWindow.Closing += new CancelEventHandler(MainWindow_Closing);
         }
@@ -114,8 +113,7 @@ namespace WpfClient.ViewModel
             {
                 await foreach (var m in stream.AsAsyncEnumerable(token))
                 {
-                    var t = new Message(m.User, m.Text, m.Time.ToDateTime());
-                    Messages.Add(t);
+                    Messages.Add(new Message(m.User, m.Text, m.Time.ToDateTime()));
                 }
             }
             catch (RpcException e) when (e.StatusCode == StatusCode.Cancelled)
