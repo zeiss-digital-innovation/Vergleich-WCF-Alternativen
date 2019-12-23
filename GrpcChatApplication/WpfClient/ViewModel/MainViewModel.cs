@@ -1,25 +1,29 @@
 using GalaSoft.MvvmLight;
-using GalaSoft.MvvmLight.CommandWpf;
+using GalaSoft.MvvmLight.Command;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.ServiceModel;
+using System.Threading;
 using System.Windows;
 using System.Windows.Input;
-using WpfClient.ChatServiceReference;
+using Grpc.Core;
+using GrpcServer;
+using System.Threading.Tasks;
 
 namespace WpfClient.ViewModel
 {
     public class MainViewModel : ViewModelBase, IDataErrorInfo
     {
         // Connecting to server
-        static InstanceContext context = new InstanceContext(new ChatCallBack());
-        ChatServiceClient server = new ChatServiceClient(context);
+        static Channel channel = new Channel("127.0.0.1:50051", ChannelCredentials.Insecure);
+        readonly Chat.ChatClient client = new Chat.ChatClient(channel);
 
         // With Nuget Package PropertyChanged.Fody is no need to define RaisePropertyChanged
         public string Username { get; set; }
         public string ChatText { get; set; }
-        public string Userlist { get; set; } = "Teilnehmer";
-        public ObservableCollection<Message> Messages { get; set; }
+        public static ObservableCollection<string> _Userlist { get; set; } = new ObservableCollection<string>();
+        public string Userlist { get; set; }
+        public static ObservableCollection<Message> Messages { get; set; } = new ObservableCollection<Message>();
         public string WindowTitle { get; set; }
         public Visibility LoginVisibility { get; set; }
         public Visibility ChatViewVisibility { get; set; }
@@ -27,6 +31,7 @@ namespace WpfClient.ViewModel
         public ICommand SendCommand { get; private set; }
         public ICommand LogOutCommand { get; private set; }
 
+        CancellationTokenSource tokenSource = new CancellationTokenSource();
         // Error Handler
         public string Error => string.Empty;
 
@@ -62,6 +67,7 @@ namespace WpfClient.ViewModel
                 WindowTitle = "Chat Application";
             }
 
+            
             Application.Current.MainWindow.Closing += new CancelEventHandler(MainWindow_Closing);
         }
 
@@ -72,18 +78,63 @@ namespace WpfClient.ViewModel
                 LoginVisibility = Visibility.Collapsed;
                 ChatViewVisibility = Visibility.Visible;
 
-                server.Join(Username);
-                var history = server.GetChats();
+                var request = new User { Name = Username };
+                Task[] tasks = new Task[2];
 
-                Messages = new ObservableCollection<Message>(history);
+                var replies = client.Join(request);
+                tasks[0] = ListenAsync(replies.ResponseStream, tokenSource.Token);
 
-                server.RefreshAsync();
+                var list = client.GetUserlist(new Google.Protobuf.WellKnownTypes.Empty());
+                tasks[1] = ListenUserlistAsync(list.ResponseStream, tokenSource.Token);
             }
         }
+
+        private async Task ListenUserlistAsync(IAsyncStreamReader<Userlist> stream, CancellationToken token)
+        {
+            try
+            {
+                await foreach (var e in stream.AsAsyncEnumerable(token))
+                {
+                    Userlist = e.User.ToUserString();
+                }
+            }
+            catch (RpcException e) when (e.StatusCode == StatusCode.Cancelled)
+            {
+                return;
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+        }
+
+        private async Task ListenAsync(IAsyncStreamReader<MessageModel> stream, CancellationToken token)
+        {
+            try
+            {
+                await foreach (var m in stream.AsAsyncEnumerable(token))
+                {
+                    var t = new Message(m.User, m.Text, m.Time.ToDateTime());
+                    Messages.Add(t);
+                }
+            }
+            catch (RpcException e) when (e.StatusCode == StatusCode.Cancelled)
+            {
+                return;
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+        }
+
         public void SendMethod()
         {
             if (!string.IsNullOrEmpty(ChatText))
-                server.SendChat(Username, ChatText);
+            {
+                var message = new MessageModel { User = Username, Text = ChatText };
+                _ = client.Send(message);
+            }
             ChatText = string.Empty;
         }
 
@@ -93,9 +144,11 @@ namespace WpfClient.ViewModel
                 e.Cancel = true;
             else
             {
+                tokenSource.Cancel();
+                tokenSource.Dispose();
                 if (!string.IsNullOrEmpty(Username))
-                    server.LogOut();
-                server.Close();
+                    client.LogOut(new User { Name = Username });
+                channel.ShutdownAsync().Wait();
             }
                 
         }

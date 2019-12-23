@@ -14,7 +14,7 @@
             <RowDefinition Height="40"/>
             <RowDefinition Height="60"/>
         </Grid.RowDefinitions>
-        <Label Grid.Row="0" Name="UserlistLabel" Content="{Binding Userlist}" />
+        <Label Grid.Row="0" Name="UserlistLabel" Content="{Binding Userlist}"/>
         <ListBox Grid.Row="1" Margin="20 10" Name="ChatPanel" ItemsSource="{Binding Messages}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
