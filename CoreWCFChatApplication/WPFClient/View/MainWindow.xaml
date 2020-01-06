@@ -1,0 +1,15 @@
+﻿<Window x:Class="WPFClient.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WPFClient"
+        xmlns:uc="clr-namespace:WPFClient.View"
+        mc:Ignorable="d"
+        Title="{Binding WindowTitle, Mode=OneWay}" Height="450" Width="800"
+        DataContext="{Binding Main, Source={StaticResource Locator}}">
+    <Grid>
+        <uc:LoginUC x:Name="Login" Width="200" Height="180" Background="AliceBlue" BorderBrush="Black" BorderThickness="1" Visibility="{Binding LoginVisibility, Mode=OneWay}" Grid.Column="1" Margin="218,110,296,109"></uc:LoginUC>
+        <uc:ChatViewUC x:Name="ChatView" Width="500" Height="400" Background="AliceBlue" BorderBrush="Black" BorderThickness="1" Visibility="{Binding ChatViewVisibility, Mode=OneWay}" Grid.Column="1" Margin="68,0,146,0"></uc:ChatViewUC>
+    </Grid>
+</Window>
