@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using CoreWCF;
 
-// Namespace in Server und Client muss gleich sein, sonst klappt das Deserialsieren bei TCP nicht (binary!!)
+// Namespace in Server und Client muss gleich sein, sonst klappt das Deserialisieren bei TCP nicht (binary!!)
 namespace CoreWCFChatApplication.Shared.Contract
 {
     [ServiceContract(CallbackContract = typeof(IChatCallback), SessionMode = SessionMode.Required)]
