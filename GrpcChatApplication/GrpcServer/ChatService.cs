@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
@@ -11,6 +12,7 @@ namespace GrpcServer
         private static List<MessageModel> history = new List<MessageModel>();
         private static Userlist users = new Userlist();
         private static readonly TimeSpan Interval = TimeSpan.FromSeconds(10);
+        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
         public ChatService()
         {
         }
@@ -21,17 +23,22 @@ namespace GrpcServer
             users.User.Add(request);
             Console.WriteLine("User {0} is connected!", request);
             int i = 0;
+
             while (!token.IsCancellationRequested)
             {
-                if (i < history.Count)
+                while (i < history.Count)
                     await responseStream.WriteAsync(history[i++]);
+
+                await _semaphore.WaitAsync(1);
             }
+            
         }
         public override Task<Empty> Send(MessageModel message, ServerCallContext context)
         {
             message.Time = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow);
             Console.WriteLine("Message {0} is sended!", message);
             history.Add(message);
+            _semaphore.Release(1);
             return Task.FromResult(new Empty());
         }
 
