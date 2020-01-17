@@ -1,0 +1,38 @@
+﻿<UserControl x:Class="WPFClient.View.ChatViewUC"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:WPFClient.View"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             DataContext="{Binding Main, Source={StaticResource Locator}}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="25"/>
+            <RowDefinition/>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="60"/>
+        </Grid.RowDefinitions>
+        <Label Grid.Row="0" Name="UserlistLabel" Content="{Binding Userlist}"/>
+        <ListBox Grid.Row="1" Margin="20 10" Name="ChatPanel" ItemsSource="{Binding Messages}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Path=Time, StringFormat='hh:mm'}"/>
+                        <TextBlock Text=" - "/>
+                        <TextBlock Text="{Binding Path=User}"/>
+                        <TextBlock Text=": "/>
+                        <TextBlock Text="{Binding Path=Text}"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <TextBox Grid.Row="2" Margin="20 2" Name="ChatTextBox" Text="{Binding ChatText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+            <TextBox.InputBindings>
+                <KeyBinding Key="Enter" Command="{Binding SendCommand}" />
+            </TextBox.InputBindings>
+        </TextBox>
+        <Button Grid.Row="3" Margin="20 2" Name="SendButton" Content="Send" Command="{Binding SendCommand}"/>
+    </Grid>
+</UserControl>
