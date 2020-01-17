@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:WPFClient.View"
+             xmlns:lb="clr-namespace:WPFClient.Helper"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              DataContext="{Binding Main, Source={StaticResource Locator}}">
@@ -15,7 +16,7 @@
             <RowDefinition Height="60"/>
         </Grid.RowDefinitions>
         <Label Grid.Row="0" Name="UserlistLabel" Content="{Binding Userlist}"/>
-        <ListBox Grid.Row="1" Margin="20 10" Name="ChatPanel" ItemsSource="{Binding Messages}">
+        <ListBox Grid.Row="1" Margin="20 10" Name="ChatPanel" ItemsSource="{Binding Messages}" lb:ListBoxBehavior.ScrollOnNewItem="True">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
