@@ -2,12 +2,13 @@
 {
     public class User
     {
-        public int Id { get; set; }
+        public string Id { get; set; }
         public string Name { get; set; }
 
         public User() { }
-        public User(string name)
+        public User(string id, string name)
         {
+            Id = id;
             Name = name;
         }
     }
