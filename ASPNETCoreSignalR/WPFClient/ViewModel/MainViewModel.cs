@@ -4,14 +4,9 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System;
-using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.Net.Http.Headers;
-using System.Threading;
-using System.Windows.Threading;
 using SharedLibrary;
 using Microsoft.AspNetCore.SignalR.Client;
 
@@ -65,9 +60,12 @@ namespace WPFClient.ViewModel
                 .WithUrl("https://localhost:5001/ChatHub")
                 .WithAutomaticReconnect()
                 .Build();
+
+            // Manual Reconnect if the connection undesirable closed
             connection.Closed += async (error) =>
             {
                 MessageBox.Show(error.Message);
+                await Task.Delay(new Random().Next(0, 5) * 1000);
                 await connection.StartAsync();
             };
 
@@ -87,11 +85,12 @@ namespace WPFClient.ViewModel
         {
             if (!string.IsNullOrEmpty(Username))
             {
+                InvokeHandler();
                 Task.Run(() => Join());
             }
         }
 
-        private async void Join()
+        private void InvokeHandler()
         {
             connection.On<Message>("ReceiveMessage", (message) =>
             {
@@ -111,14 +110,15 @@ namespace WPFClient.ViewModel
 
             connection.On<List<User>>("UserlistUpdated", (users) =>
             {
-                Application.Current.Dispatcher.InvokeAsync(() =>
-                {
-                    Userlist = users.Count + " Teilnehmer: ";
-                    foreach (var user in users)
-                        Userlist += user.Name + " ";
-                });
+                Userlist = users.Count + " Teilnehmer: ";
+                foreach (var user in users)
+                    Userlist += user.Name + " ";
             });
 
+        }
+
+        private async void Join()
+        {
             try
             {
                 await connection.StartAsync();
@@ -156,7 +156,7 @@ namespace WPFClient.ViewModel
             {
                 if (!string.IsNullOrEmpty(Username))
                 {
-                    connection.StopAsync();
+                    Task.Run(async () => { await connection.StopAsync(); });
                 }
             }
         }
